@@ -1,0 +1,5 @@
+../Core/Src/encoder.c:17:6:Encoder_Init	1
+../Core/Src/encoder.c:26:9:Encoder_ReadLeft	1
+../Core/Src/encoder.c:33:9:Encoder_ReadRight	1
+../Core/Src/encoder.c:40:6:Encoder_ResetLeft	1
+../Core/Src/encoder.c:45:6:Encoder_ResetRight	1

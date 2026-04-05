@@ -1,0 +1,11 @@
+../Core/Src/pid.c:56:16:MPU_Read16	40	static
+../Core/Src/pid.c:74:13:MPU_ReadRaw	24	static
+../Core/Src/pid.c:104:13:MPU_UpdateAngles	56	static
+../Core/Src/pid.c:130:13:LimitPWM	16	static
+../Core/Src/pid.c:145:12:ApplyDeadband	16	static
+../Core/Src/pid.c:150:13:ApplyMotorPWM	16	static
+../Core/Src/pid.c:172:13:SafetyStop	16	static
+../Core/Src/pid.c:182:5:Vertical	24	static
+../Core/Src/pid.c:187:5:Velocity	40	static
+../Core/Src/pid.c:216:5:Turn	16	static
+../Core/Src/pid.c:321:6:Control	24	static

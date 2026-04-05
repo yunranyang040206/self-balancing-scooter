@@ -1,0 +1,6 @@
+../Core/Src/pwm.c:10:17:PWM_Clamp	2
+../Core/Src/pwm.c:20:6:PWM_Start	1
+../Core/Src/pwm.c:30:6:PWM_Stop	1
+../Core/Src/pwm.c:36:6:PWM_SetA	1
+../Core/Src/pwm.c:42:6:PWM_SetB	1
+../Core/Src/pwm.c:48:10:PWM_GetMaxDuty	1

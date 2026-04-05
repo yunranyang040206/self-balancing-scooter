@@ -1,0 +1,10 @@
+../Core/Src/IIC.c:40:13:IIC_Delay	2
+../Core/Src/IIC.c:65:6:IIC_Start	1
+../Core/Src/IIC.c:85:6:IIC_Stop	1
+../Core/Src/IIC.c:102:6:IIC_Send_Byte	4
+../Core/Src/IIC.c:138:9:IIC_Read_Byte	4
+../Core/Src/IIC.c:172:9:IIC_Wait_Ack	2
+../Core/Src/IIC.c:201:6:IIC_Ack	1
+../Core/Src/IIC.c:220:6:IIC_NAck	1
+../Core/Src/IIC.c:238:6:IIC_GPIO_Init	1
+../Core/Src/IIC.c:262:9:IIC_CheckDevice	1

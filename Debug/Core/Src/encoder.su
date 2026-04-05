@@ -1,0 +1,5 @@
+../Core/Src/encoder.c:17:6:Encoder_Init	8	static
+../Core/Src/encoder.c:26:9:Encoder_ReadLeft	16	static
+../Core/Src/encoder.c:33:9:Encoder_ReadRight	16	static
+../Core/Src/encoder.c:40:6:Encoder_ResetLeft	4	static
+../Core/Src/encoder.c:45:6:Encoder_ResetRight	4	static
