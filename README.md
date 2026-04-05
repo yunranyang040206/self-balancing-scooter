@@ -8,15 +8,15 @@ The repository contains both user-written code and auto-generated code from STM3
 
 ## Repository Structure
 
-Core/
-  ├── Src/        # MAIN LOGIC (grading focus)
-  ├── Inc/        # headers
+- **User-implemented modules:**
+  - `Core/Src/`
+  - `Core/Inc/`
 
-Drivers/          # HAL auto-generated
-Debug/            # build output (ignore)
-
-*.ioc             # STM32CubeMX configuration
-*.ld              # linker scripts
+- **Auto-generated code :**
+  - `Drivers/`
+  - STM32 initialization and HAL configuration files
+  - `.project`, `.cproject`, and related IDE files
+ 
 
 ## Project Configuration
 The file `MIE438_project_test.ioc` can be opened in STM32CubeMX to inspect:
