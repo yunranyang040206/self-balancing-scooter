@@ -3,14 +3,14 @@
 ## Overview
 This project implements a self-balancing scooter using the STM32 NUCLEO-F446RE microcontroller. The system models an inverted pendulum and achieves stability through real-time sensing, control, and actuation. The implementation integrates IMU-based tilt estimation, encoder feedback, and cascaded PID control to maintain balance and enable controlled motion.
 
-## Code Organization (Important for Grading)
+## Code Organization 
 The repository contains both user-written code and auto-generated code from STM32CubeMX.
 
-- **User-implemented modules (focus for grading):**
+- **User-implemented modules:**
   - `Core/Src/`
   - `Core/Inc/`
 
-- **Auto-generated code (not the focus of grading):**
+- **Auto-generated code:**
   - `Drivers/`
   - STM32 initialization and HAL configuration files
   - `.project`, `.cproject`, and related IDE files
