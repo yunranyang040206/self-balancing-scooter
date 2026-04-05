@@ -22,23 +22,17 @@ int Target_Speed = 0, Target_turn = 0;
 int MOTO1 = 0, MOTO2 = 0;
 
 /* Balance offset */
-float Med_Angle = 1.0f;
+float Med_Angle = 3.0f;
 
 /* PID gains */
-float Vertical_Kp = -400.0f;
+float Vertical_Kp = -80.0f;
 float Vertical_Kd = -0.75f;
 
 float Velocity_Kp = -1.1f;
-float Velocity_Ki = -0.00f;
+float Velocity_Ki = -0.0055f;
 
 float Turn_Kp = 10.0f;
 float Turn_Kd = 0.6f;
-
-float pitch_offset = 0.0f;
-
-float Current_Target_Speed = 0.0f; // The speed currently being used
-float Desired_Speed = 0.0f;        // The speed we WANT to reach (0, 30, 80, etc.)
-#define RAMP_STEP 0.1f             // How fast to accelerate (adjust this)
 
 uint8_t stop = 0;
 
@@ -83,34 +77,9 @@ static void MPU_ReadRaw(short *ax, short *ay, short *az,
     *gz = MPU_Read16(MPU_GYRO_XOUT_H + 4);
 }
 
-//static void MPU_UpdateAngles(void)
-//{
-//    float ax_g, ay_g, az_g;
-//
-//    MPU_ReadRaw(&aacx, &aacy, &aacz, &gyrox, &gyroy, &gyroz);
-//
-//    ax_g = (float)aacx / ACCEL_SCALE;
-//    ay_g = (float)aacy / ACCEL_SCALE;
-//    az_g = (float)aacz / ACCEL_SCALE;
-//
-//    roll  = atan2f(ay_g, az_g) * RAD_TO_DEG;
-////    pitch = atan2f(-ax_g, sqrtf(ay_g * ay_g + az_g * az_g)) * RAD_TO_DEG;
-////    pitch = 0.98f * (pitch + gyro_pitch_dps * dt) + 0.02f * accel_pitch;
-//    pitch = atan2f(-ax_g, sqrtf(ay_g * ay_g + az_g * az_g)) * RAD_TO_DEG;
-//    pitch -= pitch_offset;
-//    yaw = 0.0f;
-//}
-
 static void MPU_UpdateAngles(void)
 {
-    static uint32_t last_tick = 0;
-    uint32_t now = HAL_GetTick();
-    float dt = (last_tick == 0) ? 0.01f : (now - last_tick) * 0.001f;
-    last_tick = now;
-
     float ax_g, ay_g, az_g;
-    float accel_pitch;
-    float gyro_pitch_dps;
 
     MPU_ReadRaw(&aacx, &aacy, &aacz, &gyrox, &gyroy, &gyroz);
 
@@ -118,12 +87,8 @@ static void MPU_UpdateAngles(void)
     ay_g = (float)aacy / ACCEL_SCALE;
     az_g = (float)aacz / ACCEL_SCALE;
 
-    accel_pitch = atan2f(-ax_g, sqrtf(ay_g * ay_g + az_g * az_g)) * RAD_TO_DEG;
-
-    gyro_pitch_dps = (float)gyroy / GYRO_SCALE;   // may need gyrox or sign flip
-
-    pitch = 0.98f * (pitch + gyro_pitch_dps * dt) + 0.02f * accel_pitch;
     roll  = atan2f(ay_g, az_g) * RAD_TO_DEG;
+    pitch = atan2f(-ax_g, sqrtf(ay_g * ay_g + az_g * az_g)) * RAD_TO_DEG;
     yaw = 0.0f;
 }
 
@@ -136,14 +101,10 @@ static void LimitPWM(int *m1, int *m2)
     if (*m2 < -PWM_MAX) *m2 = -PWM_MAX;
 }
 
-//static int ApplyDeadband(int pwm)
-//{
-//    if (pwm > 0 && pwm < 1200) return 1200;
-//    if (pwm < 0 && pwm > -1200) return -1200;
-//    return pwm;
-//}
 static int ApplyDeadband(int pwm)
 {
+    if (pwm > 0 && pwm < 2000) return 2000;
+    if (pwm < 0 && pwm > -2000) return -2000;
     return pwm;
 }
 
@@ -218,204 +179,60 @@ int Turn(float gyro_Z, int Target_turn_in)
     return (int)(Turn_Kp * Target_turn_in + Turn_Kd * gyro_Z);
 }
 
-//
-//void Control(void)
-//{
-//    int PWM_out;
-//    float gyro_y_dps, gyro_z_dps;
-//    float target_angle;
-//    uint32_t now = HAL_GetTick();
-//
-//    static uint32_t state_start = 0;
-//    static uint8_t state = 0;
-//    static uint8_t initialized = 0;
-//    static uint8_t vel_count = 0;
-//
-//    if (!initialized) {
-//        state_start = now;
-//        initialized = 1;
-//    }
-//
-//    switch (state)
-//    {
-//        case 0:
-//            Target_Speed = 5;
-//            Target_turn  = 0.1;
-//            if (now - state_start >= 3000) {
-//                state = 1;
-//                state_start = now;
-//            }
-//            break;
-//
-//        case 1:
-//            Target_Speed = 0;
-//            Target_turn  = 0;
-//            if (now - state_start >= 3000) {
-//                state = 2;
-//                state_start = now;
-//            }
-//            break;
-//
-//        case 2:
-//            Target_Speed = -5;
-//            Target_turn  = -0.1;
-//            if (now - state_start >= 3000) {
-//                state = 3;
-//                state_start = now;
-//            }
-//            break;
-//
-//        case 3:
-//        default:
-//            Target_Speed = 0;
-//            Target_turn  = 0;
-//            if (now - state_start >= 3000) {
-//                state = 0;
-//                state_start = now;
-//            }
-//            break;
-//    }
-//
-//    Encoder_Left  = Encoder_ReadLeft();
-//    Encoder_Right = -Encoder_ReadRight();
-//
-//    Encoder_ResetLeft();
-//    Encoder_ResetRight();
-//
-//    MPU_UpdateAngles();
-//
-//    gyro_y_dps = (float)gyroy / GYRO_SCALE;
-//    gyro_z_dps = (float)gyroz / GYRO_SCALE;
-//
-//    vel_count++;
-//    if (vel_count >= 5) {
-//        vel_count = 0;
-//        Velocity_out = Velocity(Target_Speed, Encoder_Left, Encoder_Right);
-//    }
-//
-//    target_angle = Med_Angle + 0.05f * Velocity_out;
-//
-//    if (target_angle > Med_Angle + 5.0f) target_angle = Med_Angle + 5.0f;
-//    if (target_angle < Med_Angle - 5.0f) target_angle = Med_Angle - 5.0f;
-//
-//    Vertical_out = Vertical(target_angle, pitch, gyro_y_dps);
-//    Turn_out = Turn(gyro_z_dps, Target_turn);
-//
-//    PWM_out = Vertical_out;
-//    MOTO1 = PWM_out - Turn_out;
-//    MOTO2 = PWM_out + Turn_out;
-//
-//    LimitPWM(&MOTO1, &MOTO2);
-//
-//    if (fabsf(pitch) > 35.0f) {
-//        Motor_Stop();
-//        stop = 1;
-//        MOTO1 = 0;
-//        MOTO2 = 0;
-//        return;
-//    }
-//
-//    ApplyMotorPWM(MOTO1, MOTO2);
-//}
-
 void Control(void)
 {
     int PWM_out;
     float gyro_y_dps, gyro_z_dps;
-    float target_angle;
-    uint32_t now = HAL_GetTick();
 
-    static uint32_t state_start = 0;
-    static uint8_t state = 0;
-    static uint8_t initialized = 0;
-    static uint8_t vel_count = 0;
-
-    if (!initialized) {
-        state_start = now;
-        initialized = 1;
-    }
-
-    /* 1. State Machine: Now sets 'Desired_Speed' instead of 'Target_Speed' */
-    switch (state)
-    {
-        case 0:
-            Desired_Speed = 10.0f; // Target speed to ramp towards
-            Target_turn  = 0.0f;
-            if (now - state_start >= 1500) { state = 1; state_start = now; }
-            break;
-
-        case 1:
-            Desired_Speed = 0.0f;  // Smoothly return to stop
-            Target_turn  = 0.0f;
-            if (now - state_start >= 1500) { state = 2; state_start = now; }
-            break;
-
-        case 2:
-            Desired_Speed = -10.0f; // Smoothly ramp to reverse
-            Target_turn  = -0.0f;
-            if (now - state_start >= 1500) { state = 3; state_start = now; }
-            break;
-
-        case 3:
-        default:
-            Desired_Speed = 0.0f;
-            Target_turn  = 0.0f;
-            if (now - state_start >= 1500) { state = 0; state_start = now; }
-            break;
-    }
-
-    /* 2. Ramping Logic: Current_Target_Speed "chases" Desired_Speed */
-    if (Current_Target_Speed < Desired_Speed) {
-        Current_Target_Speed += RAMP_STEP;
-        if (Current_Target_Speed > Desired_Speed) Current_Target_Speed = Desired_Speed;
-    }
-    else if (Current_Target_Speed > Desired_Speed) {
-        Current_Target_Speed -= RAMP_STEP;
-        if (Current_Target_Speed < Desired_Speed) Current_Target_Speed = Desired_Speed;
-    }
-
-    /* 3. Sensor Acquisition */
+    /* Read encoder counts */
     Encoder_Left  = Encoder_ReadLeft();
-    Encoder_Right = -Encoder_ReadRight(); // Double check this sign!
+    Encoder_Right = -Encoder_ReadRight();   // keep this sign if your right encoder is reversed
+
+    /* Clear encoder counts for next control cycle */
     Encoder_ResetLeft();
     Encoder_ResetRight();
 
+    /* Update IMU angles and raw gyro */
     MPU_UpdateAngles();
+
+    /* Convert gyro raw values to deg/s */
     gyro_y_dps = (float)gyroy / GYRO_SCALE;
     gyro_z_dps = (float)gyroz / GYRO_SCALE;
 
-    /* 4. Velocity Loop (Outer Loop - Runs slower) */
-    vel_count++;
-    if (vel_count >= 2) { // Run every ~40ms if Control() is at 5ms
-        vel_count = 0;
-        // Use the RAMPED speed here
-        Velocity_out = Velocity((int)Current_Target_Speed, Encoder_Left, Encoder_Right);
-    }
+    /* Desired commands */
+    Target_Speed = 0;   // standing still
+    Target_turn  = 0;   // no turning
 
-    /* 5. Calculate Lean Angle (The "Controlled Fall") */
-    // Increased multiplier from 0.002 to 0.01 for better "lean" response
-    // Increased clamp from 1.0 to 5.0 to allow actual movement
-    target_angle = Med_Angle + 0.005f * Velocity_out;
-    if (target_angle > Med_Angle + 5.0f) target_angle = Med_Angle + 5.0f;
-    if (target_angle < Med_Angle - 5.0f) target_angle = Med_Angle - 5.0f;
+    /* Outer velocity loop:
+       if robot rolls away, this shifts target angle slightly */
+    Velocity_out = Velocity(Target_Speed, Encoder_Left, Encoder_Right);
 
-    /* 6. Vertical Loop (Inner Loop - Runs every cycle) */
+    /* Inner balance loop:
+       pitch is the main balancing angle */
+//    Vertical_out = Vertical(Med_Angle + Velocity_out, pitch, gyro_y_dps);
+    float target_angle = Med_Angle + Velocity_out;
     Vertical_out = Vertical(target_angle, pitch, gyro_y_dps);
+
+    /* Turning loop */
     Turn_out = Turn(gyro_z_dps, Target_turn);
 
-    /* 7. Output Mixing and Motor Protection */
-    MOTO1 = Vertical_out - Turn_out;
-    MOTO2 = Vertical_out + Turn_out;
+    /* Motor mix */
+    PWM_out = Vertical_out;
+    MOTO1 = PWM_out - Turn_out;
+    MOTO2 = PWM_out + Turn_out;
 
+    /* Limit output */
     LimitPWM(&MOTO1, &MOTO2);
 
-    // Safety: If fallen over, kill motors and reset the Velocity Integrator
-    if (fabsf(pitch) > 40.0f) {
+    /* Safety stop if fallen */
+    if (fabsf(pitch) > 35.0f) {
         Motor_Stop();
-        stop = 1; // This triggers Encoder_S = 0 inside your Velocity() function
+        stop = 1;
         MOTO1 = 0;
         MOTO2 = 0;
-    } else {
-        ApplyMotorPWM(MOTO1, MOTO2);
+        return;
     }
+
+    /* Apply motor output */
+    ApplyMotorPWM(MOTO1, MOTO2);
 }
