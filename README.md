@@ -29,40 +29,38 @@ Code can be regenerated and modified through STM32CubeIDE.
 
 ## Software Modules
 
-### PWM Control
+### PWM Control (`pwm.c`)
 - Generates motor control signals using hardware timer (TIM1)
 - Provides high-resolution duty cycle control for motor speed
 
-### Motor Driver
-- Interfaces with H-bridge driver
+### Motor Driver (`motor.c`)
+- Interfaces with the H-bridge motor driver
 - Combines PWM (speed) and GPIO (direction) control
 - Provides abstraction for forward, reverse, and stop operations
 
-### Encoder Interface
+### Encoder Interface (`encoder.c`)
 - Uses timer encoder mode for quadrature decoding
 - Measures wheel displacement and velocity
 
-### IMU (MPU6050)
-- Communicates via I2C
+### IMU and Sensor Processing (`mpu6050.c`, `inv_mpu.c`, `inv_mpu_dmp_motion_driver.c`, `iic.c`)
+- Handles communication with MPU6050 via I2C
 - Reads accelerometer and gyroscope data
-- Estimates tilt angle for feedback control
-
-### Filtering
-- Implements a complementary filter for angle estimation
-- Combines gyroscope integration with accelerometer measurements
+- Performs onboard processing (including angle estimation and sensor fusion)
 
 ### PID Control
-- Cascaded control structure:
-  - Inner loop: balance (tilt stabilization)
-  - Outer loop: velocity control
-  - Turning control via differential motor input
-- Ensures stable operation of the inverted pendulum system
+- `pid.c`: Balance controller for maintaining upright position (standing still)
+- `pid_sm.c`: Motion controller for forward and backward movement
+- Implements cascaded control:
+  - Inner loop: tilt stabilization (balance)
+  - Outer loop: velocity control (movement)
+  - Turning via differential motor commands
 
-### Main Control Loop
+### Main Control Loop (`main.c`)
 - Executes continuously after initialization
 - Pipeline:
   Sensor reading → state estimation → control computation → motor actuation
 
+  
 ## System Architecture
 The system follows a closed-loop feedback structure:
 - Sensor module: IMU and encoders
