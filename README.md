@@ -6,14 +6,17 @@ This project implements a self-balancing scooter using the STM32 NUCLEO-F446RE m
 ## Code Organization 
 The repository contains both user-written code and auto-generated code from STM32CubeMX.
 
-- **User-implemented modules:**
-  - `Core/Src/`
-  - `Core/Inc/`
+## Repository Structure
 
-- **Auto-generated code:**
-  - `Drivers/`
-  - STM32 initialization and HAL configuration files
-  - `.project`, `.cproject`, and related IDE files
+Core/
+  ├── Src/        # MAIN LOGIC (grading focus)
+  ├── Inc/        # headers
+
+Drivers/          # HAL auto-generated
+Debug/            # build output (ignore)
+
+*.ioc             # STM32CubeMX configuration
+*.ld              # linker scripts
 
 ## Project Configuration
 The file `MIE438_project_test.ioc` can be opened in STM32CubeMX to inspect:
@@ -67,7 +70,3 @@ The system follows a closed-loop feedback structure:
 - Actuation module: DC motors with H-bridge driver
 - Power module: battery and regulated supply
 
-## Summary for Grader
-- Primary code to review: `Core/Src` and `Core/Inc`
-- Hardware and peripheral setup: `.ioc` file
-- Auto-generated files (e.g., `Drivers/`) are not manually implemented
